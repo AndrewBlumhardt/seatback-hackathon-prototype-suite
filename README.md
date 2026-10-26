@@ -1,6 +1,6 @@
 # Seatback Hackathon Prototype Suite
 
-This repository contains four seatback-style concept prototypes designed for hackathon storytelling, demo pacing, and clear passenger/crew UX outcomes.
+This repository contains four seatback-style concept submissions prepared for a **Microsoft internal hackathon** focused on reimagining in-flight digital experience. The concepts are structured as demo-ready prototypes for judging and storytelling ahead of the hackathon close on **October 30, 2026**.
 
 ## Calm Cabin
 
