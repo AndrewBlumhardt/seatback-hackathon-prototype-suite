@@ -1,0 +1,1079 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Calm Cabin Prototype</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23162b48'/%3E%3Cpath d='M8 20c2.2 0 4-1.8 4-4 0-1.1-.4-2.1-1.2-2.8 2.3-.4 4.6.2 6.5 1.7 1.9 1.5 3.1 3.7 3.3 6.1-1.1.6-2.3 1-3.6 1-3.3 0-6.2-2-7.4-5-1 .6-1.7 1.8-1.7 3z' fill='%238ac8ff'/%3E%3C/svg%3E">
+  <style>
+    :root {
+      --bg: #070d17;
+      --shell: #0f1b2f;
+      --surface: #152742;
+      --surface-soft: #1d3458;
+      --surface-strong: #274672;
+      --text: #edf5ff;
+      --muted: #9ab1d6;
+      --accent: #8ac8ff;
+      --accent-strong: #4ea1ff;
+      --ok: #72dea8;
+      --warn: #ffd38d;
+      --border: #2b4771;
+      --focus: #a8d6ff;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background:
+        radial-gradient(circle at 10% 0%, #1a3156 0%, rgba(26, 49, 86, 0) 45%),
+        radial-gradient(circle at 100% 0%, #13314c 0%, rgba(19, 49, 76, 0) 42%),
+        var(--bg);
+      color: var(--text);
+      font-family: "Segoe UI", Arial, sans-serif;
+      min-height: 100dvh;
+      display: grid;
+      place-items: center;
+      padding: 10px;
+    }
+
+    .seat-shell {
+      width: min(1380px, 99vw);
+      padding: 28px 30px 26px;
+      border-radius: 40px;
+      background:
+        linear-gradient(180deg, #586579 0%, #3f4d60 24%, #2f3b4d 100%);
+      box-shadow:
+        0 30px 80px rgba(0, 0, 0, 0.45),
+        inset 0 10px 30px rgba(255, 255, 255, 0.06),
+        inset 0 -12px 30px rgba(0, 0, 0, 0.2);
+      position: relative;
+    }
+
+    .seat-shell::before,
+    .seat-shell::after {
+      content: "";
+      position: absolute;
+      top: 10%;
+      bottom: 10%;
+      width: 14px;
+      border-radius: 999px;
+      background: rgba(10, 16, 25, 0.45);
+    }
+
+    .seat-shell::before { left: 10px; }
+    .seat-shell::after { right: 10px; }
+
+    .seatback {
+      width: 100%;
+      height: min(86vh, 700px);
+      border-radius: 28px;
+      border: 8px solid #0a111d;
+      background: var(--shell);
+      box-shadow:
+        0 24px 60px rgba(0, 0, 0, 0.48),
+        inset 0 1px 0 rgba(255, 255, 255, 0.04);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    .seatback::before {
+      content: "";
+      position: absolute;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 64px;
+      height: 6px;
+      border-radius: 999px;
+      background: rgba(211, 228, 255, 0.22);
+      z-index: 2;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 14px;
+      border-bottom: 1px solid var(--border);
+      background: #0c1729;
+      font-size: 0.78rem;
+      color: var(--muted);
+      flex: 0 0 auto;
+    }
+
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .status {
+      color: var(--ok);
+      font-weight: 700;
+      font-size: 0.76rem;
+      border: 1px solid #2b5b4f;
+      border-radius: 999px;
+      padding: 4px 9px;
+      background: rgba(84, 177, 136, 0.1);
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 290px 1fr;
+      min-height: 0;
+      flex: 1 1 auto;
+      overflow: hidden;
+    }
+
+    .left-rail {
+      border-right: 1px solid var(--border);
+      background: linear-gradient(180deg, #111f35 0%, #0f1c30 100%);
+      padding: 14px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .brand {
+      margin-bottom: 10px;
+    }
+
+    .brand h1 {
+      margin: 0;
+      font-size: 1.25rem;
+      letter-spacing: 0.2px;
+    }
+
+    .brand p {
+      margin: 4px 0 0;
+      color: var(--muted);
+      font-size: 0.82rem;
+    }
+
+    .mode-btn {
+      width: 100%;
+      text-align: left;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: var(--surface);
+      color: var(--text);
+      cursor: pointer;
+      padding: 9px;
+      margin-bottom: 7px;
+      font-size: 0.86rem;
+    }
+
+    .mode-btn strong {
+      display: block;
+      font-size: 0.88rem;
+      margin-bottom: 1px;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+
+    .mode-btn small {
+      color: var(--muted);
+      display: block;
+      line-height: 1.2;
+      font-size: 0.74rem;
+    }
+
+    .mode-btn.active {
+      border-color: var(--focus);
+      box-shadow: 0 0 0 1px var(--focus) inset;
+      background: var(--surface-strong);
+    }
+
+    .mode-btn .icon {
+      font-size: 1rem;
+      margin-right: 6px;
+    }
+
+    .demo-tip {
+      margin-top: 8px;
+      border: 1px solid #5f7aa6;
+      border-radius: 12px;
+      background: rgba(28, 49, 80, 0.72);
+      padding: 8px;
+    }
+
+    .demo-tip-title {
+      margin: 0 0 5px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: #d6e8ff;
+      letter-spacing: 0.02em;
+    }
+
+    .demo-tip ol {
+      margin: 0;
+      padding-left: 18px;
+      color: var(--muted);
+      font-size: 0.69rem;
+      line-height: 1.3;
+    }
+
+    .demo-tip code {
+      color: #ffffff;
+      background: rgba(13, 24, 40, 0.8);
+      border: 1px solid #355179;
+      border-radius: 6px;
+      padding: 1px 5px;
+      font-family: Consolas, "Courier New", monospace;
+      font-size: 0.72rem;
+    }
+
+    .remote {
+      margin-top: auto;
+      border: 1px solid #50698f;
+      border-radius: 14px;
+      background: linear-gradient(180deg, #1d2a3d 0%, #131d2b 100%);
+      padding: 9px;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+    }
+
+    .remote-title {
+      margin: 0 0 7px;
+      font-size: 0.68rem;
+      color: #cfe1ff;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-weight: 700;
+      text-align: center;
+    }
+
+    .remote-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+    }
+
+    .remote-btn {
+      border: 1px solid #445f86;
+      border-radius: 10px;
+      background: #23344c;
+      color: #eaf3ff;
+      cursor: pointer;
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      padding: 8px 6px;
+      text-align: center;
+    }
+
+    .remote-btn.warn {
+      border-color: #8a6235;
+      background: #5a4324;
+      color: #ffe0b2;
+    }
+
+    .remote-btn.active {
+      border-color: var(--focus);
+      box-shadow: 0 0 0 1px var(--focus) inset;
+      background: #2b4b79;
+    }
+
+    .right-pane {
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      min-height: 0;
+      overflow-y: auto;
+      overflow-x: hidden;
+      scrollbar-gutter: stable;
+      scrollbar-width: thin;
+      scrollbar-color: #5f86bb #16263f;
+      position: relative;
+    }
+
+    .right-pane.player-focus .hero,
+    .right-pane.player-focus .partner-strip,
+    .right-pane.player-focus #presetGrid,
+    .right-pane.player-focus .meta {
+      display: none;
+    }
+
+    .right-pane.player-focus .player-row {
+      margin-top: 0;
+    }
+
+    .right-pane.player-focus .player {
+      min-height: 420px;
+    }
+
+    .right-pane::-webkit-scrollbar {
+      width: 10px;
+    }
+
+    .right-pane::-webkit-scrollbar-track {
+      background: #16263f;
+      border-radius: 10px;
+    }
+
+    .right-pane::-webkit-scrollbar-thumb {
+      background: #5f86bb;
+      border-radius: 10px;
+      border: 2px solid #16263f;
+    }
+
+    .hero {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: start;
+      flex-wrap: wrap;
+    }
+
+    .hero h2 {
+      margin: 0;
+      font-size: 1.25rem;
+      letter-spacing: 0.2px;
+    }
+
+    .hero p {
+      margin: 4px 0 0;
+      color: var(--muted);
+      max-width: 720px;
+      font-size: 0.76rem;
+      line-height: 1.25;
+    }
+
+    .preset-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .service-actions-top {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .service-btn-top {
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: #1f2f49;
+      color: var(--text);
+      cursor: pointer;
+      padding: 5px 9px;
+      font-weight: 700;
+      font-size: 0.7rem;
+      text-align: center;
+      white-space: nowrap;
+    }
+
+    .service-btn-top.snack {
+      border-color: #8a6a2c;
+      background: #4f3b19;
+      color: #ffe2ab;
+    }
+
+    .service-btn-top.dnd {
+      border-color: #6f5f8d;
+      background: #352b47;
+      color: #e1d4ff;
+    }
+
+    .service-btn-top.snack.active {
+      border-color: #f2b43f;
+      box-shadow: 0 0 0 1px #f2b43f inset;
+    }
+
+    .service-btn-top.dnd.active {
+      border-color: #b79df2;
+      box-shadow: 0 0 0 1px #b79df2 inset;
+    }
+
+    .partner-strip {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: var(--surface);
+      padding: 9px;
+    }
+
+    .partner-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .partner-btn {
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: var(--surface-soft);
+      color: var(--text);
+      cursor: pointer;
+      padding: 6px 12px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.01em;
+    }
+
+    .partner-btn.active {
+      border-color: var(--focus);
+      background: #2b4b79;
+    }
+
+    .partner-btn[data-partner="calm"] {
+      border-color: #4f8fd6;
+      background: #1b3554;
+      color: #bbe1ff;
+    }
+
+    .partner-btn[data-partner="headspace"] {
+      border-color: #ee9f53;
+      background: #4e3116;
+      color: #ffd8b3;
+    }
+
+    .partner-btn[data-partner="cabin"] {
+      border-color: #5f7dad;
+      background: #20314d;
+      color: #d0ddf5;
+    }
+
+    .partner-note {
+      color: var(--muted);
+      font-size: 0.75rem;
+    }
+
+    .preset {
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow: hidden;
+      background: var(--surface);
+      cursor: pointer;
+      color: var(--text);
+      text-align: left;
+      padding: 0;
+    }
+
+    .preset.active {
+      border-color: var(--focus);
+      box-shadow: 0 0 0 1px var(--focus) inset;
+    }
+
+    .preset img {
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      object-fit: cover;
+      display: block;
+    }
+
+    .preset-body {
+      padding: 10px;
+    }
+
+    .preset-title {
+      margin: 0 0 2px;
+      font-size: 0.83rem;
+      font-weight: 700;
+    }
+
+    .preset-desc {
+      margin: 0;
+      font-size: 0.74rem;
+      color: var(--muted);
+      line-height: 1.2;
+    }
+
+    .provider-badge {
+      display: inline-block;
+      margin-top: 6px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 2px 7px;
+      font-size: 0.64rem;
+      color: var(--accent);
+      background: rgba(64, 129, 203, 0.12);
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+    }
+
+    .provider-badge.calm {
+      border-color: #4f8fd6;
+      color: #bbe1ff;
+      background: rgba(79, 143, 214, 0.18);
+    }
+
+    .provider-badge.headspace {
+      border-color: #ee9f53;
+      color: #ffd8b3;
+      background: rgba(238, 159, 83, 0.16);
+    }
+
+    .provider-badge.cabin {
+      border-color: #89aee2;
+      color: #d7e7ff;
+      background: rgba(137, 174, 226, 0.15);
+    }
+
+    .player-row {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 6px;
+      min-height: 0;
+    }
+
+    .player {
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow: hidden;
+      background: #000;
+      min-height: 220px;
+      position: relative;
+    }
+
+    .player iframe {
+      width: 100%;
+      height: 100%;
+      border: 0;
+      min-height: 220px;
+    }
+
+    .player.audio-only iframe {
+      opacity: 0;
+      pointer-events: none;
+      min-height: 1px;
+      height: 1px;
+    }
+
+    .audio-only-overlay {
+      display: none;
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(circle at 20% 20%, rgba(88, 144, 214, 0.3), rgba(88, 144, 214, 0) 42%),
+        linear-gradient(180deg, #0f223b 0%, #0b1628 100%);
+      color: #cfe6ff;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 16px;
+    }
+
+    .player.audio-only .audio-only-overlay {
+      display: flex;
+    }
+
+    .audio-only-overlay strong {
+      display: block;
+      font-size: 1.15rem;
+      margin-bottom: 5px;
+      color: #ffffff;
+    }
+
+    .audio-only-overlay span {
+      font-size: 0.9rem;
+      color: #b2cde9;
+    }
+
+    .controls {
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: var(--surface);
+      padding: 8px;
+      display: flex;
+      flex-direction: row;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .label {
+      font-size: 0.68rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      margin-bottom: 0;
+    }
+
+    .pill-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .pill, .action {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--surface-soft);
+      color: var(--text);
+      cursor: pointer;
+      padding: 7px 9px;
+      font-size: 0.76rem;
+      font-weight: 600;
+    }
+
+    .pill.active {
+      border-color: var(--focus);
+      background: #2b4b79;
+    }
+
+    .action.primary {
+      background: var(--accent-strong);
+      border-color: var(--accent-strong);
+      color: #fff;
+    }
+
+    .action.warn {
+      border-color: #8a6235;
+      background: #5a4324;
+      color: #ffe0b2;
+    }
+
+    .yt-link {
+      color: var(--accent);
+      font-size: 0.78rem;
+      text-decoration: none;
+    }
+
+    .pref-state {
+      margin-top: 0;
+      color: var(--muted);
+      font-size: 0.74rem;
+      line-height: 1.3;
+      white-space: nowrap;
+    }
+
+    .meta {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+      color: var(--muted);
+      font-size: 0.74rem;
+      border-top: 1px solid var(--border);
+      padding-top: 8px;
+    }
+
+    .overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(3, 8, 16, 0.86);
+      z-index: 20;
+      padding: 14px;
+    }
+
+    .overlay-box {
+      width: min(560px, 100%);
+      background: var(--shell);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 18px;
+      text-align: center;
+    }
+
+    .overlay h3 {
+      margin: 0 0 6px;
+      color: var(--warn);
+      font-size: 1.3rem;
+    }
+
+    .overlay p {
+      margin: 0 0 12px;
+      color: var(--muted);
+    }
+
+    @media (max-width: 1160px) {
+      .layout { grid-template-columns: 1fr; }
+      .left-rail { border-right: 0; border-bottom: 1px solid var(--border); }
+      .player-row { grid-template-columns: 1fr; }
+      .seat-shell { padding: 16px; }
+      .seatback { height: auto; }
+      .preset-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .remote { margin-top: 8px; }
+    }
+
+    @media (max-width: 800px) {
+      .preset-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="seat-shell">
+    <div class="seatback">
+      <div class="topbar">
+        <span>Seat 14A · Flight Demo Mode</span>
+        <div class="topbar-right">
+          <span class="pref-state" id="servicePrefState">Service: standard</span>
+          <span class="status" id="sessionStatus">Ready</span>
+        </div>
+      </div>
+
+      <div class="layout">
+      <aside class="left-rail">
+        <div class="brand">
+          <h1>Calm Cabin</h1>
+          <p>What would help right now?</p>
+        </div>
+
+        <button class="mode-btn active" data-mode="relax">
+          <strong><span class="icon">🧘</span>HELP ME RELAX</strong>
+        </button>
+        <button class="mode-btn" data-mode="distract">
+          <strong><span class="icon">🐾</span>DISTRACT ME</strong>
+        </button>
+        <button class="mode-btn" data-mode="peaceful">
+          <strong><span class="icon">🌿</span>SOMEWHERE PEACEFUL</strong>
+        </button>
+        <button class="mode-btn" data-mode="rest">
+          <strong><span class="icon">🌙</span>HELP ME REST</strong>
+        </button>
+
+        <div class="demo-tip">
+          <p class="demo-tip-title">For the full viewing experience</p>
+          <ol>
+            <li>Download this HTML file to a local folder.</li>
+            <li>Open PowerShell in this folder.</li>
+            <li>Run <code>python -m http.server 8080</code></li>
+            <li>Open <code>http://localhost:8080/calm-cabin-prototype.html</code></li>
+          </ol>
+        </div>
+
+        <div class="remote">
+          <p class="remote-title">Seat Remote</p>
+          <div class="remote-grid">
+            <button class="remote-btn" id="fullScreenBtn">MAXIMIZE</button>
+            <button class="remote-btn warn" id="simulateAnnouncement">ALERT</button>
+            <button class="remote-btn" id="audioOnlyBtn">AUDIO ONLY</button>
+            <button class="remote-btn" id="doNotDisturbBtn">DO NOT DISTURB</button>
+            <button class="remote-btn" id="wakeForSnacksBtn">WAKE FOR SERVICE</button>
+          </div>
+        </div>
+      </aside>
+
+      <main class="right-pane">
+        <section class="hero">
+          <div>
+            <h2 id="modeTitle">Help me relax</h2>
+            <p id="modeDescription">Choose a calm guided session that supports breathing, focus, and grounding.</p>
+          </div>
+        </section>
+
+        <section class="partner-strip">
+          <div class="partner-row" id="partnerFilters">
+            <button class="partner-btn active" data-partner="all">All collections</button>
+            <button class="partner-btn" data-partner="calm">Calm-inspired</button>
+            <button class="partner-btn" data-partner="headspace">Headspace-inspired</button>
+            <button class="partner-btn" data-partner="cabin">Calm Cabin Originals</button>
+          </div>
+          <span class="partner-note">Conceptual co-branded collections for demo use only.</span>
+        </section>
+
+        <section class="preset-grid" id="presetGrid"></section>
+
+        <section class="player-row">
+          <div class="player" id="playerContainer">
+            <iframe id="videoFrame" title="Calm Cabin sample video" src="" allowfullscreen allow="autoplay; encrypted-media"></iframe>
+            <div class="audio-only-overlay">
+              <div>
+                <strong>Audio-Only Mode</strong>
+                <span>Video hidden. Relaxing audio continues through headphones.</span>
+              </div>
+            </div>
+          </div>
+          <div class="controls">
+            <span class="label">Sleep timer</span>
+            <select class="pill" id="sleepTimerSelect" aria-label="Sleep timer">
+              <option value="0">Off</option>
+              <option value="15">15 min</option>
+              <option value="30">30 min</option>
+              <option value="45">45 min</option>
+            </select>
+            <a class="yt-link" id="openYoutubeLink" target="_blank" rel="noopener noreferrer" href="#">Open video directly on YouTube</a>
+          </div>
+        </section>
+
+        <section class="meta">
+          <span id="nowPlaying">Now playing: —</span>
+          <span id="durationReadout">Sleep timer: Off</span>
+        </section>
+      </main>
+    </div>
+  </div>
+  </div>
+
+  <div class="overlay" id="announcementOverlay">
+    <div class="overlay-box">
+      <h3>Cabin announcement in progress</h3>
+      <p>Calm Cabin has paused playback. Resume when announcement ends.</p>
+      <button class="action primary" id="resumeAfterAnnouncement">Resume session</button>
+    </div>
+  </div>
+
+  <script>
+    const modeConfig = {
+      relax: {
+        title: "HELP ME RELAX",
+        description: "Choose a calm guided session that supports breathing, focus, and grounding.",
+        presets: [
+          { name: "5-minute calm breath", detail: "Simple breath pacing for immediate reset", youtubeId: "aXItOY0sLRY", provider: "headspace" },
+          { name: "Mindful body scan", detail: "Gentle awareness to reduce in-flight tension", youtubeId: "inpok4MKVLM", provider: "calm" },
+          { name: "Anxiety easing meditation", detail: "Longer guided grounding session", youtubeId: "O-6f5wQXSu8", provider: "cabin" }
+        ]
+      },
+      distract: {
+        title: "DISTRACT ME",
+        description: "Shift attention with light, pleasant, low-stress visual content.",
+        presets: [
+          { name: "Tropical aquarium", detail: "Slow underwater visual loop", youtubeId: "xkW9X0R8d3Q", provider: "cabin" },
+          { name: "Playful cats", detail: "Short, friendly animal moments", youtubeId: "hY7m5jjJ9mM", provider: "calm" },
+          { name: "Birdlife scenes", detail: "Nature movement with gentle pacing", youtubeId: "9xwazD5SyVg", provider: "headspace" }
+        ]
+      },
+      peaceful: {
+        title: "SOMEWHERE PEACEFUL",
+        description: "Scenic journeys designed for calm viewing from any seat.",
+        presets: [
+          { name: "Forest and waterfalls", detail: "Green landscapes and natural ambience", youtubeId: "6lt2JfJdGSY", provider: "headspace" },
+          { name: "Ocean sunset", detail: "Slow coastal scenes with horizon focus", youtubeId: "lE6RYpe9IT0", provider: "calm" },
+          { name: "Mountain serenity", detail: "Expansive landscape views", youtubeId: "eKFTSSKCzWA", provider: "cabin" }
+        ]
+      },
+      rest: {
+        title: "HELP ME REST",
+        description: "Sleep-oriented sounds and visuals suitable for cabin rest.",
+        presets: [
+          { name: "Rain for sleep", detail: "Consistent rain sound profile", youtubeId: "mPZkdNFkNps", provider: "calm" },
+          { name: "White noise mask", detail: "Steady broadband comfort noise", youtubeId: "nMfPqeZjc2c", provider: "cabin" },
+          { name: "Night ambience", detail: "Low-motion visuals with gentle audio", youtubeId: "q76bMs-NwRk", provider: "headspace" }
+        ]
+      }
+    };
+
+    let currentMode = "relax";
+    let currentPartner = "all";
+    let isAnnouncementActive = false;
+    let isAudioOnly = false;
+    let isPlayerMaximized = false;
+    let wakeForSnacks = false;
+    let doNotDisturb = false;
+    let sleepTimerId = null;
+    let selectedPreset = modeConfig.relax.presets[0];
+
+    const modeButtons = [...document.querySelectorAll(".mode-btn")];
+    const presetGrid = document.getElementById("presetGrid");
+    const rightPane = document.querySelector(".right-pane");
+    const playerContainer = document.getElementById("playerContainer");
+    const videoFrame = document.getElementById("videoFrame");
+    const modeTitle = document.getElementById("modeTitle");
+    const modeDescription = document.getElementById("modeDescription");
+    const sessionStatus = document.getElementById("sessionStatus");
+    const nowPlaying = document.getElementById("nowPlaying");
+    const durationReadout = document.getElementById("durationReadout");
+    const openYoutubeLink = document.getElementById("openYoutubeLink");
+    const announcementOverlay = document.getElementById("announcementOverlay");
+    const partnerButtons = [...document.querySelectorAll("#partnerFilters .partner-btn")];
+    const wakeForSnacksBtn = document.getElementById("wakeForSnacksBtn");
+    const doNotDisturbBtn = document.getElementById("doNotDisturbBtn");
+    const servicePrefState = document.getElementById("servicePrefState");
+    const fullScreenBtn = document.getElementById("fullScreenBtn");
+    const audioOnlyBtn = document.getElementById("audioOnlyBtn");
+    const sleepTimerSelect = document.getElementById("sleepTimerSelect");
+
+    function embedUrl(id, autoplay = false) {
+      const auto = autoplay ? "&autoplay=1" : "";
+      return `https://www.youtube.com/embed/${id}?rel=0&modestbranding=1${auto}`;
+    }
+
+    function youtubeUrl(id) {
+      return `https://www.youtube.com/watch?v=${id}`;
+    }
+
+    function providerLabel(provider) {
+      if (provider === "calm") return "Calm-inspired";
+      if (provider === "headspace") return "Headspace-inspired";
+      return "Calm Cabin Originals";
+    }
+
+    function filteredPresets() {
+      const presets = modeConfig[currentMode].presets;
+      if (currentPartner === "all") return presets;
+      return presets.filter((x) => x.provider === currentPartner);
+    }
+
+    function renderAudioMode() {
+      playerContainer.classList.toggle("audio-only", isAudioOnly);
+      audioOnlyBtn.textContent = isAudioOnly ? "AUDIO ONLY ON" : "AUDIO ONLY";
+    }
+
+    function renderPlayerMaximizeMode() {
+      rightPane.classList.toggle("player-focus", isPlayerMaximized);
+      fullScreenBtn.textContent = isPlayerMaximized ? "EXIT MAXIMIZE" : "MAXIMIZE";
+    }
+
+    function renderServicePreferences() {
+      wakeForSnacksBtn.classList.toggle("active", wakeForSnacks);
+      doNotDisturbBtn.classList.toggle("active", doNotDisturb);
+
+      if (doNotDisturb) {
+        servicePrefState.textContent = "Service: Do Not Disturb";
+        return;
+      }
+
+      if (wakeForSnacks) {
+        servicePrefState.textContent = "Service: Wake Me for Service";
+        return;
+      }
+
+      servicePrefState.textContent = "Service: standard";
+    }
+
+    function renderPresets() {
+      const presets = filteredPresets();
+      if (!presets.length) {
+        presetGrid.innerHTML = "";
+        return;
+      }
+      if (!presets.find((x) => x.youtubeId === selectedPreset.youtubeId)) {
+        selectedPreset = presets[0];
+      }
+
+      presetGrid.innerHTML = presets.map((preset) => `
+        <button class="preset ${preset.youtubeId === selectedPreset.youtubeId ? "active" : ""}" data-video="${preset.youtubeId}">
+          <img src="https://img.youtube.com/vi/${preset.youtubeId}/hqdefault.jpg" alt="${preset.name}">
+          <div class="preset-body">
+            <p class="preset-title">${preset.name}</p>
+            <p class="preset-desc">${preset.detail}</p>
+            <span class="provider-badge ${preset.provider}">${providerLabel(preset.provider)}</span>
+          </div>
+        </button>
+      `).join("");
+
+      [...presetGrid.querySelectorAll(".preset")].forEach((button) => {
+        button.addEventListener("click", () => {
+          const chosen = presets.find((x) => x.youtubeId === button.dataset.video);
+          if (!chosen) return;
+          selectedPreset = chosen;
+          renderPresets();
+          if (!isAnnouncementActive) videoFrame.src = embedUrl(chosen.youtubeId);
+          nowPlaying.textContent = `Now playing: ${chosen.name}`;
+          openYoutubeLink.href = youtubeUrl(chosen.youtubeId);
+          sessionStatus.textContent = "Preset selected";
+        });
+      });
+    }
+
+    function setMode(mode) {
+      currentMode = mode;
+      modeButtons.forEach((button) => button.classList.toggle("active", button.dataset.mode === mode));
+      modeTitle.textContent = modeConfig[mode].title;
+      modeDescription.textContent = modeConfig[mode].description;
+      selectedPreset = modeConfig[mode].presets[0];
+      renderPresets();
+      if (!isAnnouncementActive) videoFrame.src = embedUrl(selectedPreset.youtubeId);
+      nowPlaying.textContent = `Now playing: ${selectedPreset.name}`;
+      openYoutubeLink.href = youtubeUrl(selectedPreset.youtubeId);
+      sessionStatus.textContent = "Ready";
+    }
+
+    modeButtons.forEach((button) => {
+      button.addEventListener("click", () => setMode(button.dataset.mode));
+    });
+
+    partnerButtons.forEach((button) => {
+      button.addEventListener("click", () => {
+        currentPartner = button.dataset.partner;
+        partnerButtons.forEach((x) => x.classList.toggle("active", x === button));
+        renderPresets();
+        if (!isAnnouncementActive) {
+          videoFrame.src = embedUrl(selectedPreset.youtubeId);
+        }
+        nowPlaying.textContent = `Now playing: ${selectedPreset.name}`;
+        openYoutubeLink.href = youtubeUrl(selectedPreset.youtubeId);
+        sessionStatus.textContent = "Collection switched";
+      });
+    });
+
+    document.getElementById("simulateAnnouncement").addEventListener("click", () => {
+      isAnnouncementActive = true;
+      videoFrame.src = "";
+      announcementOverlay.style.display = "flex";
+      sessionStatus.textContent = "Paused for cabin announcement";
+    });
+
+    document.getElementById("resumeAfterAnnouncement").addEventListener("click", () => {
+      isAnnouncementActive = false;
+      announcementOverlay.style.display = "none";
+      videoFrame.src = embedUrl(selectedPreset.youtubeId, true);
+      sessionStatus.textContent = "Resumed after announcement";
+    });
+
+    wakeForSnacksBtn.addEventListener("click", () => {
+      const nextValue = !wakeForSnacks;
+      wakeForSnacks = nextValue;
+      if (nextValue) doNotDisturb = false;
+      renderServicePreferences();
+      sessionStatus.textContent = wakeForSnacks ? "Wake Me for Service enabled" : "Wake Me for Service disabled";
+    });
+
+    doNotDisturbBtn.addEventListener("click", () => {
+      const nextValue = !doNotDisturb;
+      doNotDisturb = nextValue;
+      if (nextValue) wakeForSnacks = false;
+      renderServicePreferences();
+      sessionStatus.textContent = doNotDisturb ? "Do Not Disturb enabled" : "Do Not Disturb disabled";
+    });
+
+    fullScreenBtn.addEventListener("click", () => {
+      isPlayerMaximized = !isPlayerMaximized;
+      renderPlayerMaximizeMode();
+      sessionStatus.textContent = isPlayerMaximized ? "Player maximized in seatback view" : "Player returned to normal layout";
+    });
+
+    audioOnlyBtn.addEventListener("click", () => {
+      isAudioOnly = !isAudioOnly;
+      renderAudioMode();
+      sessionStatus.textContent = isAudioOnly ? "Audio-only mode enabled" : "Audio-only mode disabled";
+    });
+
+    sleepTimerSelect.addEventListener("change", () => {
+      const minutes = Number(sleepTimerSelect.value);
+      if (sleepTimerId) {
+        clearTimeout(sleepTimerId);
+        sleepTimerId = null;
+      }
+
+      if (!minutes) {
+        durationReadout.textContent = "Sleep timer: Off";
+        sessionStatus.textContent = "Sleep timer off";
+        return;
+      }
+
+      durationReadout.textContent = `Sleep timer: ${minutes} min`;
+      sessionStatus.textContent = `Sleep timer set: ${minutes} min`;
+      sleepTimerId = setTimeout(() => {
+        videoFrame.src = "";
+        durationReadout.textContent = "Sleep timer: Complete";
+        sessionStatus.textContent = "Playback stopped by sleep timer";
+        sleepTimerId = null;
+      }, minutes * 60 * 1000);
+    });
+
+    setMode("relax");
+    renderServicePreferences();
+    renderAudioMode();
+    renderPlayerMaximizeMode();
+  </script>
+</body>
+</html>

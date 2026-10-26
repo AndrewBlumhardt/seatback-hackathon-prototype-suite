@@ -1,0 +1,388 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Quiet Assist Prototype</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23162b48'/%3E%3Ccircle cx='16' cy='16' r='8' fill='%2372dea8'/%3E%3C/svg%3E">
+  <style>
+    :root { --bg:#070d17; --shell:#0f1b2f; --surface:#152742; --surface-soft:#1d3458; --text:#edf5ff; --muted:#9ab1d6; --border:#2b4771; --focus:#a8d6ff; --ok:#72dea8; --warn:#ffd38d; }
+    *{box-sizing:border-box} body{margin:0;min-height:100dvh;display:grid;place-items:center;padding:10px;font-family:"Segoe UI",Arial,sans-serif;color:var(--text);background:radial-gradient(circle at 10% 0%, #1a3156 0%, rgba(26,49,86,0) 45%),var(--bg)}
+    .seat-shell{width:min(1380px,99vw);padding:28px 30px 26px;border-radius:40px;background:linear-gradient(180deg,#586579 0%,#3f4d60 24%,#2f3b4d 100%);box-shadow:0 30px 80px rgba(0,0,0,.45)}
+    .seatback{width:100%;height:min(86vh,700px);border-radius:28px;border:8px solid #0a111d;background:var(--shell);display:flex;flex-direction:column;overflow:hidden}
+    .topbar{display:flex;justify-content:space-between;align-items:center;padding:8px 14px;border-bottom:1px solid var(--border);color:var(--muted);font-size:.78rem}
+    .top-right{display:flex;gap:7px;align-items:center}
+    .view{border:1px solid var(--border);background:var(--surface-soft);color:var(--text);border-radius:999px;padding:5px 9px;cursor:pointer;font-size:.7rem;font-weight:700}
+    .view.active{border-color:var(--focus);box-shadow:0 0 0 1px var(--focus) inset}
+    .status{font-size:.74rem;color:var(--ok);border:1px solid #2b5b4f;border-radius:999px;padding:4px 9px;background:rgba(84,177,136,.12);font-weight:700}
+    .layout{flex:1;min-height:0;display:grid;grid-template-columns:280px 1fr 340px;gap:10px;padding:12px}
+    .panel{border:1px solid var(--border);border-radius:12px;background:var(--surface);padding:9px;min-height:0}
+    .left{display:flex;flex-direction:column;gap:8px}
+    .brand h1{margin:0;font-size:1.03rem}.brand p{margin:2px 0 0;font-size:.75rem;color:var(--muted)}
+    .mode{width:100%;text-align:left;border:1px solid var(--border);border-radius:11px;background:var(--surface-soft);color:var(--text);padding:8px;cursor:pointer;font-size:.74rem;font-weight:700}
+    .mode small{display:block;color:var(--muted);margin-top:2px;font-weight:400}
+    .mode.active{border-color:var(--focus);box-shadow:0 0 0 1px var(--focus) inset}
+    .tip{margin-top:auto;border:1px solid #5f7aa6;border-radius:11px;background:rgba(28,49,80,.72);padding:8px}
+    .tip h4{margin:0 0 5px;font-size:.69rem;text-transform:uppercase;letter-spacing:.06em}.tip ol{margin:0;padding-left:16px;font-size:.67rem;color:var(--muted);line-height:1.3}
+    .tip code{font-family:Consolas,monospace;color:#fff;border:1px solid #355179;border-radius:4px;padding:1px 4px;background:rgba(13,24,40,.85)}
+    .main{display:grid;grid-template-rows:auto auto 1fr;gap:8px}
+    .hero{display:flex;justify-content:space-between;align-items:center;gap:10px}
+    .hero h2{margin:0;font-size:1rem}.hero p{margin:2px 0 0;color:var(--muted);font-size:.74rem}
+    .pill{border:1px solid var(--border);border-radius:999px;background:var(--surface-soft);padding:4px 8px;font-size:.68rem;color:var(--muted)}
+    .urgent-reminder{border:1px solid #b85a4e;border-radius:10px;background:linear-gradient(90deg,#7a1f1f 0%,#a53a1f 45%,#c95a24 100%);color:#fff4e8;padding:9px 10px;font-size:.75rem;font-weight:700;display:none}
+    .urgent-reminder strong{display:block;font-size:.78rem;margin-bottom:2px}
+    .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+    .opt{border:1px solid var(--border);border-radius:10px;background:var(--surface-soft);color:var(--text);cursor:pointer;padding:8px;font-size:.73rem;text-align:left}
+    .opt.active{border-color:var(--focus);box-shadow:0 0 0 1px var(--focus) inset}
+    .seatmap{border:1px solid var(--border);border-radius:10px;background:#0f1c30;padding:8px}
+    .seatgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:6px}
+    .seat{border:1px solid #345377;border-radius:7px;padding:6px 4px;text-align:center;font-size:.68rem;color:#cfe1ff}
+    .seat.you{border-color:#72dea8;box-shadow:0 0 0 1px #72dea8 inset}.seat.note{border-color:#ffd38d}
+    textarea,select{width:100%;border:1px solid var(--border);border-radius:10px;background:#0f1c30;color:var(--text);padding:8px;font:inherit;font-size:.75rem}
+    textarea{min-height:74px;margin-top:7px}
+    .field-label{font-size:.7rem;color:var(--muted);margin:6px 0 4px}
+    .translate-preview{margin-top:7px;border:1px dashed #3a5d8c;border-radius:10px;background:#12243d;padding:8px;font-size:.72rem;color:#d5e7ff}
+    .row{display:flex;flex-wrap:wrap;gap:7px;margin-top:7px}
+    .btn{border:1px solid var(--border);border-radius:9px;background:var(--surface-soft);color:var(--text);cursor:pointer;padding:7px 9px;font-size:.72rem;font-weight:700}
+    .btn.primary{background:#4ea1ff;border-color:#4ea1ff;color:#fff}.btn.warn{background:#5a4324;border-color:#8a6235;color:#ffe0b2}
+    .right{display:grid;grid-template-rows:auto auto 1fr auto;gap:8px}
+    .feed{border:1px solid var(--border);border-radius:10px;background:#101d33;padding:8px;overflow:auto;display:grid;gap:6px}
+    .card{border:1px solid #35507a;border-radius:9px;background:#162743;padding:7px;font-size:.72rem}
+    .meta{color:var(--muted);font-size:.66rem;margin-bottom:2px}
+    .quiet{font-size:.72rem;color:var(--muted)}
+    .crew-head{font-size:.74rem;color:var(--muted);display:flex;justify-content:space-between;gap:8px;align-items:center}
+    .queue{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+    .queue .card{cursor:pointer}
+    .queue .card.active{border-color:var(--focus);box-shadow:0 0 0 1px var(--focus) inset}
+    .detail{border:1px solid var(--border);border-radius:10px;background:#0f1c30;padding:8px;font-size:.72rem}
+    .crew-seatmap{border:1px solid var(--border);border-radius:10px;background:#0f1c30;padding:8px}
+    .crew-seatgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:6px}
+    .crew-seat{border:1px solid #345377;border-radius:7px;padding:6px 4px;text-align:center;font-size:.68rem;color:#cfe1ff;background:#12243d;cursor:pointer}
+    .crew-seat.active{box-shadow:0 0 0 1px currentColor inset}
+    .crew-seat.urgent{border-color:#ff8d8d;color:#ffc3c3}
+    .crew-seat.private{border-color:#ffd38d;color:#ffe7bb}
+    .crew-seat.routine{border-color:#8ac8ff;color:#cae6ff}
+    .crew-seat.selected{outline:1px solid var(--focus)}
+    .announcement-overlay{position:fixed;inset:0;background:rgba(6,12,20,.85);display:none;align-items:center;justify-content:center;z-index:50;padding:20px}
+    .announcement-overlay.show{display:flex}
+    .announcement-box{max-width:460px;width:min(92vw,460px);border:1px solid #4f6f9e;border-radius:14px;background:#152742;padding:16px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.45)}
+    .announcement-box h3{margin:0 0 8px;font-size:1rem}
+    .announcement-box p{margin:0 0 12px;color:var(--muted);font-size:.77rem}
+    .crew-only{display:none}.seatback.crew-view .crew-only{display:block}.seatback.crew-view #passengerPanel{display:none}
+    .seatback.passenger-view #crewPanel{display:none}.seatback.crew-view .layout{grid-template-columns:280px 1fr}
+  </style>
+</head>
+<body>
+  <div class="seat-shell">
+    <div class="seatback passenger-view" id="seatback">
+      <div class="topbar">
+        <span>Seat 21C · Quiet Assist Demo</span>
+        <div class="top-right">
+          <button class="view active" id="passengerViewBtn">PASSENGER VIEW</button>
+          <button class="view" id="crewViewBtn">CREW VIEW</button>
+          <span class="status" id="status">Ready</span>
+        </div>
+      </div>
+      <div class="layout">
+        <aside class="panel left">
+          <div class="brand">
+            <h1>Quiet Assist</h1>
+            <p>Discreet passenger-to-crew messaging</p>
+          </div>
+          <button class="mode active" data-mode="urgent">I NEED HELP NOW<small>Immediate crew response</small></button>
+          <button class="mode" data-mode="private">SPEAK PRIVATELY<small>Sensitive conversation</small></button>
+          <button class="mode" data-mode="routine">WHEN CONVENIENT<small>Routine comfort/service</small></button>
+          <button class="btn warn" id="announce">Simulate announcement</button>
+          <div class="tip">
+            <h4>For the full viewing experience</h4>
+            <ol>
+              <li>Download this HTML file to a local folder</li>
+              <li>Open PowerShell in this folder</li>
+              <li>Run <code>python -m http.server 8080</code></li>
+              <li>Open <code>http://localhost:8080/quiet-assist-prototype.html</code></li>
+            </ol>
+          </div>
+        </aside>
+        <main class="panel main" id="passengerPanel">
+          <section class="hero">
+            <div>
+              <h2 id="title">I NEED HELP NOW</h2>
+              <p id="desc">Private request with discreet crew follow-up.</p>
+            </div>
+            <span class="pill">Screen auto-returns to neutral</span>
+          </section>
+          <section class="urgent-reminder" id="urgentReminder">
+            <strong>Immediate help needed?</strong>
+            Press the built-in call request button on your seat console or overhead panel now while this message is being sent.
+          </section>
+          <section class="grid" id="options"></section>
+          <section>
+            <textarea id="note" placeholder="Optional note for crew (private to crew devices only)..."></textarea>
+            <div class="row">
+              <button class="btn" id="prefPrivateSeat">No discussion at seat</button>
+              <button class="btn" id="prefSeatChange">Seat change if possible</button>
+              <button class="btn" id="prefWake">Wake me for service</button>
+              <button class="btn primary" id="send">Send Quiet Assist</button>
+            </div>
+          </section>
+        </main>
+        <aside class="panel right" id="crewPanel">
+          <div class="crew-head"><span>Crew queue</span><span id="queueCount">0 open</span></div>
+          <div class="crew-seatmap">
+            <div class="quiet">Crew seat map (lit seats = active Quiet Assist requests)</div>
+            <div class="crew-seatgrid" id="crewSeatGrid"></div>
+          </div>
+          <div>
+            <div class="field-label">Crew preferred language (translated view)</div>
+            <select id="crewLanguage"></select>
+            <div class="row">
+              <button class="btn active" id="autoTranslateBtn">Auto-translate ON</button>
+              <button class="btn" id="translateNow">Translate now</button>
+            </div>
+          </div>
+          <div class="queue" id="queue"></div>
+          <div class="detail" id="detail">Select a request to see details.</div>
+          <div class="feed" id="feed"></div>
+          <div class="row" style="margin-top:0">
+            <button class="btn" id="acceptReq">Accept request</button>
+            <button class="btn" id="ack">Acknowledge</button>
+            <button class="btn warn" id="resolve">Mark resolved</button>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </div>
+  <div class="announcement-overlay" id="announcementOverlay">
+    <div class="announcement-box">
+      <h3>Cabin announcement in progress</h3>
+      <p>Quiet Assist is temporarily paused while the crew announcement plays.</p>
+      <button class="btn primary" id="resumeAfterAnnouncement">Resume Quiet Assist</button>
+    </div>
+  </div>
+  <script>
+    const modes = {
+      urgent: { title:"I NEED HELP NOW", desc:"Private request with discreet crew follow-up.", opts:["Unwanted attention nearby","Feeling unsafe","Medical discomfort","Need immediate crew support"] },
+      private: { title:"SPEAK PRIVATELY", desc:"Crew follows up quietly away from nearby passengers.", opts:["Sensitive conversation","Anxiety support","Language assistance","Private follow-up"] },
+      routine: { title:"WHEN CONVENIENT", desc:"Non-urgent comfort and service requests.", opts:["Blanket/water","Seat comfort issue","Possible reseating","Wake me for service"] }
+    };
+    const languages = {
+      en:"English", es:"Spanish", fr:"French", de:"German", pt:"Portuguese", it:"Italian",
+      ar:"Arabic", hi:"Hindi", zh:"Chinese", ja:"Japanese", ko:"Korean"
+    };
+    let mode = "urgent", selected = "", p1=false, p2=false, p3=false, view="passenger";
+    const queue = [
+      { id:"q-201", seat:"18C", level:"URGENT", request:"Need immediate crew support", note:"Someone is making me uncomfortable.", language:"en", translated:"Someone is making me uncomfortable.", prefs:["no seat discussion"], status:"open" },
+      { id:"q-202", seat:"19A", level:"PRIVATE", request:"Sensitive conversation", note:"Por favor hable conmigo lejos de mi asiento.", language:"es", translated:"Please speak with me away from my seat.", prefs:["no seat discussion"], status:"open" },
+      { id:"q-203", seat:"20B", level:"ROUTINE", request:"Wake me for service", note:"機内食のときに起こしてください。", language:"ja", translated:"Please wake me for meal and drink service.", prefs:["wake for service"], status:"open" },
+      { id:"q-204", seat:"21A", level:"PRIVATE", request:"Anxiety support", note:"J'ai besoin d'un endroit calme pendant quelques minutes.", language:"fr", translated:"I need a quiet space for a few minutes.", prefs:["seat change"], status:"open" },
+      { id:"q-205", seat:"22C", level:"ROUTINE", request:"Possible reseating", note:"إذا كان هناك مقعد آخر متاح، أود الانتقال.", language:"ar", translated:"If another seat is available, I would appreciate moving.", prefs:["seat change"], status:"open" }
+    ];
+    let selectedQueueId = queue[0].id;
+    const seatback = document.getElementById("seatback");
+    const passengerViewBtn = document.getElementById("passengerViewBtn");
+    const crewViewBtn = document.getElementById("crewViewBtn");
+    const options = document.getElementById("options");
+    const title = document.getElementById("title");
+    const desc = document.getElementById("desc");
+    const note = document.getElementById("note");
+    const feed = document.getElementById("feed");
+    const status = document.getElementById("status");
+    const queueEl = document.getElementById("queue");
+    const detailEl = document.getElementById("detail");
+    const queueCount = document.getElementById("queueCount");
+    const crewSeatGrid = document.getElementById("crewSeatGrid");
+    const urgentReminder = document.getElementById("urgentReminder");
+    const announcementOverlay = document.getElementById("announcementOverlay");
+    const crewLanguage = document.getElementById("crewLanguage");
+    const autoTranslateBtn = document.getElementById("autoTranslateBtn");
+    const translateNow = document.getElementById("translateNow");
+    const crewSeats = ["18A","18B","18C","19A","19B","19C","20A","20B","20C","21A","21B","21C","22A","22B","22C"];
+    const languageOptions = Object.entries(languages).map(([code,name])=>`<option value="${code}">${name}</option>`).join("");
+    crewLanguage.innerHTML = languageOptions;
+    crewLanguage.value = "en";
+    let autoTranslateEnabled = true;
+    const translatedOnce = new Set();
+
+    function levelClass(level) {
+      if (level === "URGENT") return "urgent";
+      if (level === "PRIVATE") return "private";
+      return "routine";
+    }
+
+    function renderCrewSeats() {
+      const open = queue.filter(x=>x.status!=="resolved");
+      const bySeat = new Map(open.map(x=>[x.seat, x]));
+      const selectedSeat = queueItemById(selectedQueueId)?.seat;
+      crewSeatGrid.innerHTML = crewSeats.map(seat=>{
+        const item = bySeat.get(seat);
+        const classes = ["crew-seat"];
+        if (item) classes.push("active", levelClass(item.level));
+        if (selectedSeat === seat) classes.push("selected");
+        return `<button class="${classes.join(" ")}" data-seat="${seat}">${seat}</button>`;
+      }).join("");
+      [...crewSeatGrid.querySelectorAll(".crew-seat")].forEach(b=>b.onclick=()=>{
+        const seat = b.dataset.seat;
+        const item = open.find(x=>x.seat===seat);
+        if (!item) return;
+        selectedQueueId = item.id;
+        renderQueue();
+        renderDetail();
+        status.textContent = `Focused on ${item.id} (${seat})`;
+      });
+    }
+
+    function queueItemById(id){ return queue.find(x=>x.id===id); }
+    function renderQueue() {
+      const open = queue.filter(x=>x.status!=="resolved");
+      queueCount.textContent = `${open.length} open`;
+      queueEl.innerHTML = open.map(x=>`
+        <button class="card ${x.id===selectedQueueId?"active":""}" data-id="${x.id}">
+          <div class="meta">${x.seat} · ${x.level} · ${languages[x.language] || "English"}</div>
+          <div><strong>${x.request}</strong></div>
+        </button>
+      `).join("");
+      [...queueEl.querySelectorAll(".card")].forEach(b=>b.onclick=()=>{
+        selectedQueueId = b.dataset.id;
+        renderQueue();
+        renderDetail();
+      });
+      if (!open.some(x=>x.id===selectedQueueId)) selectedQueueId = open[0]?.id || "";
+      renderCrewSeats();
+    }
+
+    function renderDetail() {
+      const item = queueItemById(selectedQueueId);
+      if (!item) { detailEl.textContent = "No open requests."; return; }
+      const modeKey = item.level === "URGENT" ? "urgent" : item.level === "PRIVATE" ? "private" : "routine";
+      const translatedForCrew = translateDemo(item.note, item.language, crewLanguage.value, modeKey, item.request);
+      const canShowTranslation = autoTranslateEnabled || translatedOnce.has(item.id);
+      const translatedBlock = canShowTranslation
+        ? translatedForCrew
+        : "Translation hidden. Tap \"Translate now\" or enable Auto-translate.";
+      detailEl.innerHTML = `
+        <div class="meta">${item.id} · Seat ${item.seat} · ${item.level} · ${languages[item.language] || "English"}</div>
+        <div><strong>${item.request}</strong></div>
+        <div><span class="meta">Crew translation (${languages[crewLanguage.value] || "English"})</span><div>${translatedBlock}</div></div>
+        <div class="meta">Prefs: ${item.prefs.length?item.prefs.join(", "):"none"} · Status: ${item.status}</div>
+      `;
+    }
+    function translateDemo(text, sourceLangCode, targetLangCode, modeKey, requestLabel) {
+      const t = (text || "").trim();
+      const byMode = {
+        urgent: "Immediate assistance requested.",
+        private: "Passenger requests a private conversation.",
+        routine: "Passenger requests routine service assistance."
+      };
+      const normalizedMode = byMode[modeKey] ? modeKey : "routine";
+      const baseRequest = requestLabel || byMode[normalizedMode];
+      const englishMessage = sourceLangCode === "en" && t ? t : baseRequest;
+      if (targetLangCode === "en") return englishMessage;
+      if (targetLangCode === sourceLangCode && t) return t;
+      return `[Demo ${languages[sourceLangCode] || sourceLangCode.toUpperCase()}→${languages[targetLangCode] || targetLangCode.toUpperCase()}] ${englishMessage}`;
+    }
+    function updateTranslatePreview() {
+      const lang = document.getElementById("passengerLanguage").value;
+      const base = (note.value || selected || "General assistance request");
+      const translated = translateDemo(base, lang, "en", mode, selected || "General assistance request");
+      document.getElementById("translatePreview").textContent = `Crew translation preview: ${translated}`;
+    }
+    function renderUrgentReminder() {
+      urgentReminder.style.display = mode === "urgent" ? "block" : "none";
+    }
+    function renderView() {
+      seatback.classList.toggle("crew-view", view==="crew");
+      seatback.classList.toggle("passenger-view", view==="passenger");
+      passengerViewBtn.classList.toggle("active", view==="passenger");
+      crewViewBtn.classList.toggle("active", view==="crew");
+      status.textContent = view==="crew" ? "Crew console" : "Passenger mode";
+    }
+    passengerViewBtn.onclick = ()=>{ view="passenger"; renderView(); };
+    crewViewBtn.onclick = ()=>{ view="crew"; renderView(); };
+    function drawOpts(){
+      options.innerHTML = modes[mode].opts.map(o=>`<button class="opt ${o===selected?"active":""}" data-o="${o}">${o}</button>`).join("");
+      [...options.querySelectorAll(".opt")].forEach(b=>b.onclick=()=>{ selected=b.dataset.o; drawOpts(); updateTranslatePreview(); });
+    }
+    [...document.querySelectorAll(".mode")].forEach(b=>b.onclick=()=>{
+      mode=b.dataset.mode; selected=""; title.textContent=modes[mode].title; desc.textContent=modes[mode].desc;
+      document.querySelectorAll(".mode").forEach(x=>x.classList.toggle("active",x===b)); drawOpts(); renderUrgentReminder(); updateTranslatePreview();
+    });
+    function toggle(btn, key){ if(key===1)p1=!p1; if(key===2)p2=!p2; if(key===3)p3=!p3; btn.classList.toggle("active"); }
+    prefPrivateSeat.onclick=()=>toggle(prefPrivateSeat,1);
+    prefSeatChange.onclick=()=>toggle(prefSeatChange,2);
+    prefWake.onclick=()=>toggle(prefWake,3);
+    send.onclick=()=>{
+      const prefs=[]; if(p1)prefs.push("no seat discussion"); if(p2)prefs.push("seat change"); if(p3)prefs.push("wake for service");
+      const language = document.getElementById("passengerLanguage").value;
+      const original = note.value || selected || "General assistance request";
+      const req = {
+        id:`q-${Math.floor(Math.random()*900+100)}`,
+        seat:"21C",
+        level:mode.toUpperCase(),
+        request:selected||"General assistance request",
+        note:original,
+        language,
+        translated:translateDemo(original, language, "en", mode, selected || "General assistance request"),
+        prefs,
+        status:"open"
+      };
+      queue.unshift(req);
+      selectedQueueId = req.id;
+      renderQueue();
+      renderDetail();
+      const crewMsg = translateDemo(original, language, crewLanguage.value, mode, selected || "General assistance request");
+      const html = `<div class="card"><div class="meta">Seat 21C · ${mode.toUpperCase()} · ${new Date().toLocaleTimeString()}</div><div><strong>${selected||"General assistance request"}</strong></div><div>${crewMsg}</div><div class="meta">Prefs: ${prefs.length?prefs.join(", "):"none"}</div></div>`;
+      feed.innerHTML = html + feed.innerHTML; note.value=""; status.textContent = "Sent discreetly";
+      updateTranslatePreview();
+    };
+    crewLanguage.onchange = ()=>renderDetail();
+    autoTranslateBtn.onclick = ()=>{
+      autoTranslateEnabled = !autoTranslateEnabled;
+      autoTranslateBtn.classList.toggle("active", autoTranslateEnabled);
+      autoTranslateBtn.textContent = autoTranslateEnabled ? "Auto-translate ON" : "Auto-translate OFF";
+      renderDetail();
+      status.textContent = autoTranslateEnabled ? "Auto-translate enabled" : "Auto-translate disabled";
+    };
+    translateNow.onclick = ()=>{
+      const item = queueItemById(selectedQueueId); if (!item) return;
+      translatedOnce.add(item.id);
+      renderDetail();
+      status.textContent = `Translated ${item.id} to ${languages[crewLanguage.value] || "selected language"}`;
+    };
+    acceptReq.onclick=()=>{
+      const item = queueItemById(selectedQueueId); if (!item) return;
+      item.status = "accepted";
+      renderDetail();
+      status.textContent = `Crew accepted ${item.id}`;
+    };
+    ack.onclick=()=>{
+      const item = queueItemById(selectedQueueId); if (!item) return;
+      item.status = "acknowledged";
+      renderDetail();
+      status.textContent = `Passenger acknowledged for ${item.id}`;
+    };
+    resolve.onclick=()=>{
+      const item = queueItemById(selectedQueueId); if (!item) return;
+      item.status = "resolved";
+      renderQueue();
+      renderDetail();
+      status.textContent = `${item.id} resolved`;
+    };
+    announce.onclick=()=>{
+      announcementOverlay.classList.add("show");
+      status.textContent = "Cabin announcement in progress";
+    };
+    resumeAfterAnnouncement.onclick=()=>{
+      announcementOverlay.classList.remove("show");
+      status.textContent = view==="crew" ? "Crew console" : "Passenger mode";
+    };
+    document.querySelector("#passengerPanel section:nth-of-type(3)").insertAdjacentHTML("afterbegin", `
+      <div class="field-label">Passenger language (auto-translate to crew English)</div>
+      <select id="passengerLanguage">${languageOptions}</select>
+      <div class="translate-preview" id="translatePreview">Crew translation preview: General assistance request</div>
+    `);
+    passengerLanguage.onchange = updateTranslatePreview;
+    note.oninput = updateTranslatePreview;
+    drawOpts(); renderView(); renderQueue(); renderDetail(); renderCrewSeats(); renderUrgentReminder(); updateTranslatePreview();
+  </script>
+</body>
+</html>
