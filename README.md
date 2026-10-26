@@ -1,25 +1,38 @@
 # Seatback Hackathon Prototype Suite
 
-This repository contains four seatback-style hackathon prototypes:
+This repository contains four seatback-style concept prototypes designed for hackathon storytelling, demo pacing, and clear passenger/crew UX outcomes.
 
-1. **Calm Cabin**: wellness and rest-focused in-flight content experience.
-2. **Quiet Assist**: discreet passenger-to-crew assistance and crew queue workflow.
-3. **Flight Highlights**: camera views, route timeline, replay pins, and sharing summary flow.
-4. **Travel Together**: synced watch party and social/group game concept experience.
+## Calm Cabin
 
-## Screenshots
+Calm Cabin reframes in-flight wellness as a focused seatback experience: passengers can quickly choose how they want to feel (relax, distract, peaceful scenery, or rest), set service preferences, and continue playback with minimal friction. The flow is designed to reduce decision fatigue and keep controls accessible in a constrained seatback viewport.
 
-### Calm Cabin
-![Calm Cabin](./calm-cabin-screenshot.png)
+![Calm Cabin](./calm-cabin/calm-cabin-screenshot.png)
 
-### Quiet Assist
-![Quiet Assist](./quiet-assist-screenshot.png)
+Project files: [calm-cabin/README.md](./calm-cabin/README.md)
 
-### Flight Highlights
-![Flight Highlights](./flight-highlights-screenshot.png)
+## Quiet Assist
 
-### Travel Together
-![Travel Together](./travel-together-screenshot.png)
+Quiet Assist demonstrates discreet help requests for sensitive situations, with urgency tiers, private follow-up preferences, crew-side triage, seat-map awareness, and language translation controls. The concept emphasizes privacy and rapid escalation, while still giving crew practical operational context.
+
+![Quiet Assist](./quiet-assist/quiet-assist-screenshot.png)
+
+Project files: [quiet-assist/README.md](./quiet-assist/README.md)
+
+## Flight Highlights
+
+Flight Highlights turns window moments into a timeline-driven discovery experience. Passengers can switch camera angles, revisit missed scenes by route pin, enable proactive notifications for notable moments, and generate post-flight summary/share content from what they viewed.
+
+![Flight Highlights](./flight-highlights/flight-highlights-screenshot.png)
+
+Project files: [flight-highlights/README.md](./flight-highlights/README.md)
+
+## Travel Together
+
+Travel Together explores social in-cabin entertainment: seat-to-seat invites, synchronized watch sessions, group chat, and visually rich game session previews. It focuses on turning isolated IFE usage into collaborative experiences suitable for friends, families, and ad hoc groups.
+
+![Travel Together](./travel-together/travel-together-screenshot.png)
+
+Project files: [travel-together/README.md](./travel-together/README.md)
 
 ## Rendering instructions
 
@@ -27,8 +40,7 @@ This repository contains four seatback-style hackathon prototypes:
 2. Open PowerShell in the repo root.
 3. Run `python -m http.server 8080`.
 4. Open the desired app:
-   - `http://localhost:8080/calm-cabin-prototype.html`
-   - `http://localhost:8080/quiet-assist-prototype.html`
-   - `http://localhost:8080/flight-highlights-prototype.html`
-   - `http://localhost:8080/travel-together-prototype.html`
-
+   - `http://localhost:8080/calm-cabin/calm-cabin-prototype.html`
+   - `http://localhost:8080/quiet-assist/quiet-assist-prototype.html`
+   - `http://localhost:8080/flight-highlights/flight-highlights-prototype.html`
+   - `http://localhost:8080/travel-together/travel-together-prototype.html`
